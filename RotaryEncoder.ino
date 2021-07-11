@@ -51,6 +51,7 @@ void RotaryEncoderSetup() {
 }
 
 void handleShortButtonPress() {
+  Serial.println("Short Button Pressed");
   edit_mode++;
   if (edit_mode > EDIT_MODE_OFFSET) {
     edit_mode = EDIT_MODE_PATTERN_LEN;
@@ -58,10 +59,12 @@ void handleShortButtonPress() {
 }
 
 void handleLongButtonPress() {
+  Serial.println("Long Button Pressed");
   edit_mode = EDIT_MODE_MEMORY;
 }
 
 void handleRotaryInc() {
+  Serial.println("Rotary Inc");
   bool anyChange = false;
   switch(edit_mode) {
     case EDIT_MODE_PATTERN_LEN:
@@ -90,8 +93,11 @@ void handleRotaryInc() {
       anyChange = true;       
       break;
     case EDIT_MODE_MEMORY:
-      if (cur_memory_pos < 15) {
-        cur_memory_pos++;
+      if (cur_memory_pos > 0) {
+        cur_memory_pos--;
+      }
+      else {
+        cur_memory_pos = 15;
       }
       break;      
   }
@@ -101,6 +107,7 @@ void handleRotaryInc() {
 }
 
 void handleRotaryDec() {
+  Serial.println("Rotary Dec");
   bool anyChange = false;
   switch(edit_mode) {
     case EDIT_MODE_PATTERN_LEN:
@@ -110,7 +117,7 @@ void handleRotaryDec() {
       }
       break;      
     case EDIT_MODE_ACTIVE_BEATS:
-      if(pattern_nactive[curChannel] > 1) {
+      if(pattern_nactive[curChannel] > 0) {
         pattern_nactive[curChannel]--;
         anyChange = true;
       }
@@ -123,8 +130,11 @@ void handleRotaryDec() {
       anyChange = true;        
       break;      
     case EDIT_MODE_MEMORY:
-      if (cur_memory_pos > 0) {
-        cur_memory_pos--;
+      if (cur_memory_pos < 15) {
+        cur_memory_pos++;
+      }
+      else {
+        cur_memory_pos = 0;
       }
       break;      
   }

@@ -99,19 +99,22 @@ void offset_pattern(int chan, int offset) {
 
 int euclid(int n, int k, int chan, int offset) {
     int spaces = n - k;
-    int per_pulse = n/k;
-    if (per_pulse < 1) per_pulse = 1;
-    int per_space = n/spaces;
-    if (per_space < 1) per_space = 1;
+    float per_pulse = (float) n / (float) k;
+    float per_space = (float) n / (float) spaces;
     int i;
-    int pos = 0;
+    float pos = 0.0f;
+
+    Serial.print("Euclid for: "); Serial.print(n); Serial.print(" / "); Serial.print(k); Serial.println();
+    Serial.print("Per Pulse: "); Serial.print(per_pulse); Serial.println();
+    Serial.print("Per Space: "); Serial.print(per_space); Serial.println();
  
     if (per_space > per_pulse) {
         for (i = 0 ; i < n ; i++) {     // empty array to 1
             euclid_pattern[chan][i] = 1;
         }
         for (i = 0 ; i < spaces ; i++) {
-            euclid_pattern[chan][pos] = 0;
+            int p = (int) pos;
+            euclid_pattern[chan][p] = 0;
             pos = pos + per_space;
         }
     }
@@ -120,8 +123,9 @@ int euclid(int n, int k, int chan, int offset) {
             euclid_pattern[chan][i] = 0;
         }
         for (i = 0 ; i < k ; i++) {
-            euclid_pattern[chan][pos] = 1;
-            pos = pos + per_pulse;
+          int p = (int) pos;
+          euclid_pattern[chan][p] = 1;
+          pos = pos + per_pulse;
         }
     }
     offset_pattern(chan, offset);
@@ -129,6 +133,9 @@ int euclid(int n, int k, int chan, int offset) {
 
 // the setup function runs once when you press reset or power the board
 void setup() {
+
+  Serial.begin(115200);
+
   euclid(16,1,0,0); // init euclid patterns for all channels
   euclid(16,1,1,0);
   euclid(16,1,2,0);

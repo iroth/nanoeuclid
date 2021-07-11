@@ -40,8 +40,9 @@ void PushButtonsSetup() {
 }
 
 void handlePlayButtonPressed() {
-    if (edit_mode == EDIT_MODE_MEMORY) {  // PLAY button used as Store
-      storeCurrentPatchToSlot(cur_memory_pos);
+    Serial.println("Play Button Pressed");
+    if (edit_mode == EDIT_MODE_MEMORY) {  // PLAY button used as Load
+      loadCurrentPatchFromSlot(cur_memory_pos);
     }
     else {
         isPlaying = !isPlaying;
@@ -50,8 +51,9 @@ void handlePlayButtonPressed() {
 }
 
 void handleChannelButtonPressed() {
-    if (edit_mode == EDIT_MODE_MEMORY) {  // CHAN button used as Load
-      loadCurrentPatchFromSlot(cur_memory_pos);
+    Serial.println("Channel Button Pressed");
+    if (edit_mode == EDIT_MODE_MEMORY) {  // CHAN button used as Store
+      storeCurrentPatchToSlot(cur_memory_pos);
     }
     else {
       curChannel++;

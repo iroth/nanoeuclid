@@ -46,13 +46,17 @@ const color_t ORANGE = {180, 40, 0};
 const color_t PINK =   {180, 20, 40};
 const color_t PURPLE = {120, 0, 120};
 const color_t VIOLET = {40, 0, 180};
-const color_t RED =    {180, 0, 0};
-const color_t GREEN =  {0, 180, 0};
-const color_t BLUE =   {0, 0, 180};
+const color_t RED =    {150, 0, 0};
+const color_t GREEN =  {0, 80, 0};
+const color_t BLUE =   {0, 0, 80};
 
-color_t plen[NUM_CHANNELS] = { PINK, YELLOW, ORANGE, RED };
-color_t actv[NUM_CHANNELS] = { BLUE, PURPLE, VIOLET, CYAN };
-int brightness = 20;
+const color_t LIGHT_YELLOW =   {60, 40, 10};
+const color_t LIGHT_ORANGE =   {90, 40, 10};
+const color_t LIGHT_RED =   {110, 30, 0};
+
+color_t plen[NUM_CHANNELS] = { LIGHT_YELLOW, LIGHT_ORANGE, LIGHT_RED, RED };
+color_t actv[NUM_CHANNELS] = { BLUE, BLUE, BLUE, BLUE };
+int brightness = 15;
 
 void RingDisplaySetup() {
   pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
@@ -70,30 +74,27 @@ void ringCycle(color_t *c) {
 }
 
 void openingShow() {
-  color_t show[4] = {{150, 150,0}, {200,100,0}, {200,0,0}, {150,0,150}};
+  color_t show[4] = {LIGHT_YELLOW, LIGHT_ORANGE, LIGHT_RED, RED};
   for (int i = 0 ; i < 4 ; i++) {
     ringCycle(&show[i]);
   }
 }
 
 void clockToInternal() {
-  color_t red = {200,0,0};  
+  color_t red = {80,0,0};  
   ringCycle(&red);
 }
 
 void clockToExternal() {
-  color_t green = {0,200,0};  
+  color_t green = {0,80,0};  
   ringCycle(&green);
 }
 
 void displayLedRingWhilePlaying() {
   pixels.clear(); // Set all pixel colors to 'off'
-  brightness = 20;
-  if (clock_source == CLK_SRC_EXT){
-    brightness = 50;
-  }
-  pixels.setBrightness(brightness);
   for(int i=0; i<pattern_length[curChannel]; i++) { // For each pixel...
+//    if (abs(i - gSeqNoteIndex[curChannel]) != 1)
+//      continue;
     if (euclid_pattern[curChannel][i]) {
       pixels.setPixelColor(i, pixels.Color(actv[curChannel].r, actv[curChannel].g, actv[curChannel].b));
     }
@@ -101,22 +102,17 @@ void displayLedRingWhilePlaying() {
       pixels.setPixelColor(i, pixels.Color(plen[curChannel].r, plen[curChannel].g, plen[curChannel].b));
     }
   }
-  pixels.setPixelColor(gSeqNoteIndex[curChannel], 50,250,50);  
+  pixels.setPixelColor(gSeqNoteIndex[curChannel], 10,80,10);  
   pixels.show();   // Send the updated pixel colors to the hardware.
 }
 
-void displayLedRingWhileEditing() {
+void displayLedRing() {
   pixels.clear(); // Set all pixel colors to 'off'
-  brightness = 20;
-  if (clock_source == CLK_SRC_EXT){
-    brightness = 50;
-  }
-  pixels.setBrightness(brightness);
   switch(edit_mode) {
     case EDIT_MODE_PATTERN_LEN:
       for(int i=0; i<pattern_length[curChannel]; i++) { // For each pixel...
         if (euclid_pattern[curChannel][i]) {
-          pixels.setPixelColor(i, pixels.Color(actv[curChannel].r, actv[curChannel].g, actv[curChannel].b));
+          pixels.setPixelColor(i, pixels.Color(0, 80, 20));
         }
         else {
           pixels.setPixelColor(i, pixels.Color(plen[curChannel].r, plen[curChannel].g, plen[curChannel].b));
@@ -126,7 +122,7 @@ void displayLedRingWhileEditing() {
     case EDIT_MODE_ACTIVE_BEATS:
       for(int i=0; i<pattern_length[curChannel]; i++) { // For each pixel...
         if (euclid_pattern[curChannel][i]) {
-          pixels.setPixelColor(i, pixels.Color(200, 200, 200));
+          pixels.setPixelColor(i, pixels.Color(40, 0, 80));
         }
         else {
           pixels.setPixelColor(i, pixels.Color(plen[curChannel].r, plen[curChannel].g, plen[curChannel].b));
@@ -136,7 +132,7 @@ void displayLedRingWhileEditing() {
     case EDIT_MODE_OFFSET:
       for(int i=0; i<pattern_length[curChannel]; i++) { // For each pixel...
         if (euclid_pattern[curChannel][i]) {
-          pixels.setPixelColor(i, pixels.Color(40, 180, 0));
+          pixels.setPixelColor(i, pixels.Color(0, 20, 80));
         }
         else {
           pixels.setPixelColor(i, pixels.Color(plen[curChannel].r, plen[curChannel].g, plen[curChannel].b));
@@ -159,15 +155,18 @@ void displayLedRingWhileEditing() {
       }      
       break;      
   }
+  if (isPlaying) {
+      pixels.setPixelColor(gSeqNoteIndex[curChannel], 10,80,10);  
+  }
   pixels.show();   // Send the updated pixel colors to the hardware.
 }
 
-void displayLedRing() {
-  if (isPlaying)   
-  {
-    displayLedRingWhilePlaying();
-  }
-  else {    
-    displayLedRingWhileEditing();
-  }
-}
+//void displayLedRingOLD() {
+//  if (isPlaying)   
+//  {
+//    displayLedRingWhilePlaying();
+//  }
+//  else {    
+//    displayLedRingWhileEditing();
+//  }
+//}

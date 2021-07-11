@@ -29,6 +29,7 @@ int last_tempo_pot_value = 0;
 
 void setTempoFromPot(int val) {
   curBPM = 20 + (1023-val) / 3;
+//  Serial.println("Set Tempo: "+ curBPM);
   setTempo();
 }
 
