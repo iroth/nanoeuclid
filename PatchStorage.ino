@@ -49,10 +49,48 @@ void initEEPROM() {
     EEPROM.write(MAGIC_OFF+1, 0xAA);
 }
 
+void dumpTwoBytes(int offset) {
+  byte val = EEPROM.read(offset);
+  Serial.print(val, HEX); Serial.print(" ");
+  val = EEPROM.read(offset+1);
+  Serial.print(val, HEX); Serial.println();
+}
+
+void dumpSlot(int slotNum) {
+  Serial.print("Slot "); Serial.print(slotNum); Serial.print(": ");
+  int readOffset = PATCH0_OFF + slotNum * PATCH_LEN;
+  for (int i = 0 ; i < PATCH_LEN ; i++) {
+    byte val = EEPROM.read(readOffset+i);
+    Serial.print(val, HEX); Serial.print(" ");
+  }
+  Serial.println();
+}
+
+void dumpEEPROM() {
+    Serial.println("----- EEPROM Dump -----");
+    Serial.print("MAGIC: ");
+    dumpTwoBytes(MAGIC_OFF);
+    Serial.print("Taken: ");
+    dumpTwoBytes(TAKEN_BITMAP_OFF);
+    for (int i = 0 ; i < 16 ; i++) {
+      dumpSlot(i);
+    }
+    for (int i = 0 ; i < 16 ; i++) {
+      if (isSlotTaken(i)) {
+        Serial.print("X ");
+      }
+      else {
+        Serial.print("O ");
+      }
+    }
+    Serial.println();
+    Serial.println("----- EEPROM Dump -----");
+}
 void PatchStorageSetup() {
   if (!isEEPROMInitialized()) {
     initEEPROM();    
-  }
+  }  
+  dumpEEPROM();
 }
 
 bool isSlotTaken(int slotNum) {
@@ -60,15 +98,20 @@ bool isSlotTaken(int slotNum) {
     return false;
   }
   int takenBit;
+  byte val;
   if (slotNum < 8) {
-    takenBit = bitRead(EEPROM.read(TAKEN_BITMAP_OFF), slotNum);
+    val = EEPROM.read(TAKEN_BITMAP_OFF);
+    takenBit = bitRead(val, slotNum);
   }
-  takenBit = bitRead(EEPROM.read(TAKEN_BITMAP_OFF+1), slotNum-8);
+  else {
+    val = EEPROM.read(TAKEN_BITMAP_OFF+1);
+    takenBit = bitRead(val, slotNum-8);
+  }
   return (takenBit != 0);
 }
 
 void printByte(byte val) {
-  Serial.print(val,BIN); Serial.println();
+  Serial.print(val,HEX); Serial.println();
 }
 
 void setSlotTaken(int slotNum) {
@@ -78,11 +121,17 @@ void setSlotTaken(int slotNum) {
   }
   if (slotNum < 8) {
     byte val = EEPROM.read(TAKEN_BITMAP_OFF);
+    printByte(val);
     EEPROM.update(TAKEN_BITMAP_OFF, bitSet(val, slotNum));
+    val = EEPROM.read(TAKEN_BITMAP_OFF);
+    printByte(val);
   }
   else {
     byte val = EEPROM.read(TAKEN_BITMAP_OFF+1);
+    printByte(val);
     EEPROM.update(TAKEN_BITMAP_OFF+1, bitSet(val, slotNum-8));
+    val = EEPROM.read(TAKEN_BITMAP_OFF+1);
+    printByte(val);
   }
 }
 
@@ -94,7 +143,7 @@ byte storeChan(int slotNum, int chan) {
   printByte(val);
   EEPROM.update(writeOffset++, val);
   val = pattern_offset[chan];
-  Serial.print(val,BIN); Serial.println();
+  Serial.print(val,HEX); Serial.println();
   EEPROM.update(writeOffset++, val);
 }
 
@@ -110,38 +159,31 @@ void storeCurrentPatchToSlot(int slotNum) {
   setSlotTaken(slotNum);
 }
 
+byte loadChan(int slotNum, int chan) {
+  Serial.print("channel: "); Serial.print(chan);
+  int readOffset = PATCH0_OFF + slotNum * PATCH_LEN + chan * CHAN_LEN;
+  byte val = EEPROM.read(readOffset++);
+  byte v3 = (val & 0xf0) >> 4;
+  int len = 1 + v3;
+  Serial.print(" Len = "); Serial.print(len);
+  pattern_length[chan] = len;
+  int nAct = 1 + (val & 0x0f);
+  Serial.print(" nAct = "); Serial.print(nAct);
+  pattern_nactive[chan] = nAct;
+  val = EEPROM.read(readOffset++);
+  Serial.print(" Off = "); Serial.print(val & 0x0f,HEX); Serial.println();
+  pattern_offset[chan] = (val & 0x0f);
+  euclid(pattern_length[chan], pattern_nactive[chan], chan, pattern_offset[chan]);
+}
+
 void loadCurrentPatchFromSlot(int slotNum) {
-  Serial.print("loadCurrentPatchFromSlot for slot: "); Serial.print(slotNum); Serial.println();
   if (slotNum < 0 || slotNum > 15 || !isSlotTaken(slotNum)) {
+    Serial.print("BAD slot: "); Serial.print(slotNum); Serial.println();
     return;
   }
-  int readOffset = PATCH0_OFF + slotNum * PATCH_LEN;
-  byte val = EEPROM.read(readOffset++);      // CHANNEL A
-  Serial.print(val,BIN); Serial.println();
-  pattern_length[0] = val & 0xf0 >> 4;
-  pattern_nactive[0] = val & 0x0f;
-  val = EEPROM.read(readOffset++);
-  Serial.print(val,BIN); Serial.println();
-  pattern_offset[0] = val & 0x0f;
-  val = EEPROM.read(readOffset++);      // CHANNEL B
-  Serial.print(val,BIN); Serial.println();
-  pattern_length[1] = val & 0xf0 >> 4;
-  pattern_nactive[1] = val & 0x0f;
-  val = EEPROM.read(readOffset++);
-  Serial.print(val,BIN); Serial.println();
-  pattern_offset[1] = val & 0x0f;
-  val = EEPROM.read(readOffset++);      // CHANNEL C
-  Serial.print(val,BIN); Serial.println();
-  pattern_length[2] = val & 0xf0 >> 4;
-  pattern_nactive[2] = val & 0x0f;
-  val = EEPROM.read(readOffset++);
-  Serial.print(val,BIN); Serial.println();
-  pattern_offset[2] = val & 0x0f;
-  val = EEPROM.read(readOffset++);      // CHANNEL D
-  Serial.print(val,BIN); Serial.println();
-  pattern_length[3] = val & 0xf0 >> 4;
-  pattern_nactive[3] = val & 0x0f;
-  val = EEPROM.read(readOffset++);
-  Serial.print(val,BIN); Serial.println();
-  pattern_offset[3] = val & 0x0f; 
+  Serial.print("loadCurrentPatchFromSlot for slot: "); Serial.print(slotNum); Serial.println();
+  loadChan(slotNum, 0);   // Channel A
+  loadChan(slotNum, 1);   // Channel B
+  loadChan(slotNum, 2);   // Channel C
+  loadChan(slotNum, 3);   // Channel D
 }

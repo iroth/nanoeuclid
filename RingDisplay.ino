@@ -90,22 +90,6 @@ void clockToExternal() {
   ringCycle(&green);
 }
 
-void displayLedRingWhilePlaying() {
-  pixels.clear(); // Set all pixel colors to 'off'
-  for(int i=0; i<pattern_length[curChannel]; i++) { // For each pixel...
-//    if (abs(i - gSeqNoteIndex[curChannel]) != 1)
-//      continue;
-    if (euclid_pattern[curChannel][i]) {
-      pixels.setPixelColor(i, pixels.Color(actv[curChannel].r, actv[curChannel].g, actv[curChannel].b));
-    }
-    else {
-      pixels.setPixelColor(i, pixels.Color(plen[curChannel].r, plen[curChannel].g, plen[curChannel].b));
-    }
-  }
-  pixels.setPixelColor(gSeqNoteIndex[curChannel], 10,80,10);  
-  pixels.show();   // Send the updated pixel colors to the hardware.
-}
-
 void displayLedRing() {
   pixels.clear(); // Set all pixel colors to 'off'
   switch(edit_mode) {
@@ -146,10 +130,10 @@ void displayLedRing() {
         }
         else {
           if (isSlotTaken(i)) {
-            pixels.setPixelColor(i, pixels.Color(0, 200, 0));
+            pixels.setPixelColor(i, pixels.Color(0, 100, 0));
           }
           else {
-            pixels.setPixelColor(i, pixels.Color(200, 0, 0));            
+            pixels.setPixelColor(i, pixels.Color(100, 0, 0));            
           }
         }
       }      
@@ -160,13 +144,3 @@ void displayLedRing() {
   }
   pixels.show();   // Send the updated pixel colors to the hardware.
 }
-
-//void displayLedRingOLD() {
-//  if (isPlaying)   
-//  {
-//    displayLedRingWhilePlaying();
-//  }
-//  else {    
-//    displayLedRingWhileEditing();
-//  }
-//}

@@ -43,6 +43,7 @@ void handlePlayButtonPressed() {
     Serial.println("Play Button Pressed");
     if (edit_mode == EDIT_MODE_MEMORY) {  // PLAY button used as Load
       loadCurrentPatchFromSlot(cur_memory_pos);
+      edit_mode = EDIT_MODE_PATTERN_LEN;
     }
     else {
         isPlaying = !isPlaying;
@@ -54,6 +55,7 @@ void handleChannelButtonPressed() {
     Serial.println("Channel Button Pressed");
     if (edit_mode == EDIT_MODE_MEMORY) {  // CHAN button used as Store
       storeCurrentPatchToSlot(cur_memory_pos);
+      edit_mode = EDIT_MODE_PATTERN_LEN;
     }
     else {
       curChannel++;

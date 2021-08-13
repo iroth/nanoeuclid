@@ -28,7 +28,7 @@
 #define PIN_ENCODER_A      7
 #define PIN_ENCODER_B      8
 #define PIN_ENCODER_SWITCH 9
-#define LONG_PRESS_TIME    2000
+#define LONG_PRESS_TIME    800
 static uint8_t enc_prev_pos   = 0;
 static uint8_t enc_flags      = 0;
 int lastState = LOW;
@@ -61,6 +61,7 @@ void handleShortButtonPress() {
 void handleLongButtonPress() {
   Serial.println("Long Button Pressed");
   edit_mode = EDIT_MODE_MEMORY;
+  dumpEEPROM();
 }
 
 void handleRotaryInc() {

@@ -137,9 +137,9 @@ void setup() {
   Serial.begin(115200);
 
   euclid(16,1,0,0); // init euclid patterns for all channels
-  euclid(16,1,1,0);
-  euclid(16,1,2,0);
-  euclid(16,1,3,0);
+  euclid(16,2,1,0);
+  euclid(16,4,2,0);
+  euclid(16,8,3,0);
 
   gSeqTimeCurrent = millis();
   gSyncOn = false;
