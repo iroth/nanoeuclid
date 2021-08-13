@@ -2,6 +2,9 @@
 ## _Arduino-based Euclid Rhythm Sequencer_
 
 ## **Features**
+
+This sequencer is inspired by Euclidean Circles v2 by vpme.de.
+
 - 4 Channels with 4 gate outputs
 - Each channel has 16 steps pattern
 - NeoPixels ring is used as main UI elelemt
